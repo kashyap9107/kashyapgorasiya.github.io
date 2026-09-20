@@ -125,3 +125,11 @@ This repository is intended for personal portfolio use. If you plan to publish i
 - Add a favicon and social share metadata for final branding
 - Add a lightweight accessibility pass for contrast and keyboard navigation
 - Consider a cleaner GitHub Pages profile variation later when you want the next design direction
+
+
+## Featured AI Project: ShopEase AI Shopping Agent
+
+- Live Demo: https://shopease-ai-shopping-agent.onrender.com/
+- GitHub: https://github.com/kashyap9107/shopease-ai-shopping-agent
+
+ShopEase is a Flask-based learning project powered by LangChain and Groq. It provides AI-assisted product discovery, comparison, recommendations, cart management, category filters, and image-based product search backed by SQLite.

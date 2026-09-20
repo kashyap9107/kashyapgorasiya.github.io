@@ -534,6 +534,14 @@ DocChat - Multilingual Multimodal Document RAG | Feb 2026 – May 2026
 • Generated document embeddings, indexed them in a FAISS vector database, and implemented semantic similarity search with configurable Top-K retrieval to retrieve relevant document context for user queries.
 • Integrated LangChain for RAG orchestration and Llama 3.1 8B for context-grounded question answering.
 
+ShopEase AI Shopping Agent
+Live Demo: https://shopease-ai-shopping-agent.onrender.com/
+GitHub: https://github.com/kashyap9107/shopease-ai-shopping-agent
+• Built a Flask-based AI shopping application powered by LangChain and Groq, providing product search, product comparison, recommendations, cart management, category filters, and image-based product search.
+• Implemented tool-using shopping workflows with product search by name, brand, description, and category; comparison for up to four products; same-category recommendations; and a shared current-session cart.
+• Added configurable search filters, Markdown-formatted AI responses, Bootstrap offcanvas cart UI, and image-search fallback using catalog filenames when vision inference is unavailable.
+• Technology Stack: Python 3.14, Flask, LangChain, LangChain Groq, Groq Chat Models, SQLite, Bootstrap 5, JavaScript, HTML/CSS, Gunicorn.
+
 Intelligent Crop Yield Prediction for Precision Farming | Jan 2025 – Apr 2025
 • Developed a crop yield prediction and recommendation system for 22 crop types, performing exploratory data analysis, class-wise statistical imputation, and feature engineering.
 • Compared KNN, Decision Tree, and SVM using cross-validation and hyperparameter tuning; achieved 98% crop classification accuracy with SVM (precision/recall/F1 > 0.95).

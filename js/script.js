@@ -74,6 +74,22 @@
       ]
     },
     {
+      id: 'shopease', category: 'ai', icon: 'bi-cart4', title: 'ShopEase AI Shopping Agent', date: 'AI Agent / Tool-Using Project',
+      summary: 'Flask-based AI shopping application with product search, recommendations, comparison, cart management, and image-based product search.',
+      tech: [['devicon-python-plain','Python 3.14'],['devicon-flask-original','Flask'],['bi-link-45deg','LangChain'],['bi-cpu','Groq Chat Models'],['bi-database','SQLite'],['devicon-bootstrap-plain','Bootstrap 5']],
+      link: 'https://shopease-ai-shopping-agent.onrender.com/', linkLabel: 'Live Demo', linkIcon: 'bi-box-arrow-up-right',
+      extraLinks: [
+        {url: 'https://github.com/kashyap9107/shopease-ai-shopping-agent', label: 'GitHub Repository', icon: 'bi-github'}
+      ],
+      sections: [
+        ['Overview', '<p>Built a learning-focused <strong>AI shopping agent</strong> that combines a Flask storefront with LangChain and Groq to provide interactive product discovery and tool-using shopping assistance.</p>'],
+        ['AI Shopping Capabilities', '<ul><li>AI shopping assistant powered by Groq.</li><li>Natural-language product search across name, brand, description, and category.</li><li>Product comparison for up to four products and same-category recommendations.</li><li>Add-to-cart through both product cards and the AI assistant, using a shared current-session cart.</li><li>Image-based product search with a catalog filename fallback when vision inference is unavailable.</li></ul>'],
+        ['Application Features', '<p>Implemented category filtering, maximum-price and minimum-rating filters, Bootstrap offcanvas cart UI, Markdown-formatted AI responses, and SQLite-backed product/session data.</p>'],
+        ['Technology Stack', '<p><strong>Python 3.14, Flask, LangChain, LangChain Groq, Groq Chat Models, SQLite, Bootstrap 5, JavaScript, HTML/CSS, Gunicorn.</strong></p>'],
+        ['Architecture', '<div class="modal-architecture">User Query → Flask Web App → LangChain Agent → Groq Chat Model → Shopping Tools → SQLite Catalog / Session Cart → Grounded Shopping Response</div>']
+      ]
+    },
+    {
       id: 'traffic', category: 'ai', icon: 'bi-camera-video', title: 'Real-Time Traffic Rule Enforcement with Drones', date: 'M.Tech Thesis | Jun 2025 – May 2026',
       summary: 'UAV-based traffic surveillance combining detection, helmet violations, plate localization, recognition, and real-time enforcement.',
       tech: [['bi-bounding-box-circles','YOLOv11 / YOLOv26'],['bi-cpu-fill','RF-DETR'],['bi-search','SAHI'],['bi-alphabet','TESTR'],['bi-card-text','OCR']],

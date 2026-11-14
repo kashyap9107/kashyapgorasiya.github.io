@@ -1,6 +1,9 @@
 (() => {
   'use strict';
 
+  /* ──────────────────────────────────────────────
+     Core DOM references
+  ────────────────────────────────────────────── */
   const nav = document.getElementById('mainNav');
   const backTop = document.getElementById('backTop');
   const year = document.getElementById('year');
@@ -10,6 +13,9 @@
 
   year.textContent = new Date().getFullYear();
 
+  /* ──────────────────────────────────────────────
+     Scroll handling — navbar & back-to-top
+  ────────────────────────────────────────────── */
   const onScroll = () => {
     nav.classList.toggle('scrolled', window.scrollY > 20);
     backTop.classList.toggle('show', window.scrollY > 500);
@@ -19,11 +25,38 @@
 
   backTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' }));
 
-  navLinks.forEach(link => link.addEventListener('click', () => {
-    const menu = document.getElementById('navMenu');
-    if (menu.classList.contains('show') && window.bootstrap) bootstrap.Collapse.getOrCreateInstance(menu).hide();
-  }));
+  /* ──────────────────────────────────────────────
+     Mobile navigation toggle
+  ────────────────────────────────────────────── */
+  const navToggler = document.querySelector('.navbar-toggler');
+  const navMenu = document.getElementById('navMenu');
 
+  if (navToggler && navMenu) {
+    navToggler.addEventListener('click', () => {
+      const isOpen = navMenu.classList.toggle('show');
+      navToggler.setAttribute('aria-expanded', isOpen);
+    });
+
+    // Close mobile menu when a nav link is clicked
+    navLinks.forEach(link => link.addEventListener('click', () => {
+      if (navMenu.classList.contains('show')) {
+        navMenu.classList.remove('show');
+        navToggler.setAttribute('aria-expanded', 'false');
+      }
+    }));
+
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (navMenu.classList.contains('show') && !navMenu.contains(e.target) && !navToggler.contains(e.target)) {
+        navMenu.classList.remove('show');
+        navToggler.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
+  /* ──────────────────────────────────────────────
+     Scroll-triggered reveal animations
+  ────────────────────────────────────────────── */
   const revealElements = document.querySelectorAll('.reveal');
   if (reducedMotion || !('IntersectionObserver' in window)) {
     revealElements.forEach(el => el.classList.add('visible'));
@@ -37,6 +70,9 @@
     revealElements.forEach(el => observer.observe(el));
   }
 
+  /* ──────────────────────────────────────────────
+     Active nav link tracking on scroll
+  ────────────────────────────────────────────── */
   if ('IntersectionObserver' in window) {
     const navObserver = new IntersectionObserver(entries => entries.forEach(entry => {
       if (!entry.isIntersecting) return;
@@ -46,6 +82,138 @@
     sections.forEach(section => navObserver.observe(section));
   }
 
+  /* ──────────────────────────────────────────────
+     Accordion (custom, replaces Bootstrap)
+  ────────────────────────────────────────────── */
+  document.querySelectorAll('[data-toggle="accordion"]').forEach(button => {
+    const targetId = button.getAttribute('data-target');
+    const target = document.querySelector(targetId);
+    if (!target) return;
+
+    button.addEventListener('click', () => {
+      const parentId = target.getAttribute('data-parent');
+      const isOpen = target.classList.contains('show');
+
+      // If parent accordion, close all siblings first
+      if (parentId) {
+        const parent = document.querySelector(parentId);
+        if (parent) {
+          parent.querySelectorAll('.accordion-collapse.show').forEach(openPanel => {
+            if (openPanel !== target) {
+              openPanel.classList.remove('show');
+              const siblingBtn = openPanel.closest('.accordion-item')?.querySelector('.accordion-button');
+              if (siblingBtn) siblingBtn.classList.add('collapsed');
+            }
+          });
+        }
+      }
+
+      // Toggle current panel
+      if (isOpen) {
+        target.classList.remove('show');
+        button.classList.add('collapsed');
+      } else {
+        target.classList.add('show');
+        button.classList.remove('collapsed');
+      }
+    });
+  });
+
+  /* ──────────────────────────────────────────────
+     Carousel (custom, replaces Bootstrap)
+  ────────────────────────────────────────────── */
+  document.querySelectorAll('.carousel').forEach(carousel => {
+    const items = [...carousel.querySelectorAll('.carousel-item')];
+    const indicators = [...carousel.querySelectorAll('.carousel-indicators button')];
+    const interval = parseInt(carousel.dataset.interval) || 5000;
+    let currentIndex = items.findIndex(item => item.classList.contains('active'));
+    if (currentIndex < 0) currentIndex = 0;
+    let autoPlayTimer = null;
+
+    const goToSlide = (index) => {
+      if (index < 0) index = items.length - 1;
+      if (index >= items.length) index = 0;
+      items.forEach((item, i) => item.classList.toggle('active', i === index));
+      indicators.forEach((btn, i) => btn.classList.toggle('active', i === index));
+      currentIndex = index;
+    };
+
+    const startAutoPlay = () => {
+      stopAutoPlay();
+      if (carousel.dataset.ride === 'carousel') {
+        autoPlayTimer = setInterval(() => goToSlide(currentIndex + 1), interval);
+      }
+    };
+
+    const stopAutoPlay = () => {
+      if (autoPlayTimer) { clearInterval(autoPlayTimer); autoPlayTimer = null; }
+    };
+
+    // Indicator clicks
+    indicators.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const slideIndex = parseInt(btn.dataset.slideTo);
+        if (!isNaN(slideIndex)) goToSlide(slideIndex);
+        startAutoPlay();
+      });
+    });
+
+    // Prev/Next buttons
+    carousel.querySelectorAll('[data-slide="prev"]').forEach(btn => {
+      btn.addEventListener('click', () => { goToSlide(currentIndex - 1); startAutoPlay(); });
+    });
+    carousel.querySelectorAll('[data-slide="next"]').forEach(btn => {
+      btn.addEventListener('click', () => { goToSlide(currentIndex + 1); startAutoPlay(); });
+    });
+
+    // Pause on hover
+    carousel.addEventListener('mouseenter', stopAutoPlay);
+    carousel.addEventListener('mouseleave', startAutoPlay);
+
+    // Start auto-play
+    startAutoPlay();
+  });
+
+  /* ──────────────────────────────────────────────
+     Modal (custom, replaces Bootstrap)
+  ────────────────────────────────────────────── */
+  const modalElement = document.getElementById('projectModal');
+  const modalTitle = document.getElementById('projectModalLabel');
+  const modalCategory = document.getElementById('projectModalCategory');
+  const modalBody = document.getElementById('projectModalBody');
+  const modalLink = document.getElementById('projectModalLink');
+  const modalExtraLinks = document.getElementById('projectModalExtraLinks');
+
+  const showModal = () => {
+    modalElement.classList.add('show');
+    modalElement.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  };
+
+  const hideModal = () => {
+    modalElement.classList.remove('show');
+    modalElement.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  };
+
+  // Close modal buttons
+  document.querySelectorAll('[data-dismiss="modal"]').forEach(btn => {
+    btn.addEventListener('click', hideModal);
+  });
+
+  // Close modal by clicking backdrop
+  modalElement?.addEventListener('click', (e) => {
+    if (e.target === modalElement) hideModal();
+  });
+
+  // Close modal with Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modalElement?.classList.contains('show')) hideModal();
+  });
+
+  /* ──────────────────────────────────────────────
+     Skill icons map
+  ────────────────────────────────────────────── */
   const skillIcons = {
     'Machine Learning':'bi bi-cpu', 'Deep Learning':'bi bi-layers', 'Transformers':'bi bi-diagram-3', 'LLMs':'bi bi-chat-square-text', 'RAG':'bi bi-search', 'Generative AI':'bi bi-stars', 'AI Agents':'bi bi-robot', 'Agentic AI':'bi bi-robot', 'Semi-supervised Learning':'bi bi-bezier2', 'Model Fine-tuning':'bi bi-sliders', 'Model Evaluation':'bi bi-clipboard-data', 'Research Paper Reproduction':'bi bi-journal-code',
     'YOLO':'bi bi-bounding-box', 'Ultralytics':'bi bi-lightning-charge', 'RF-DETR':'bi bi-cpu', 'FaceNet':'bi bi-person-bounding-box', 'MTCNN':'bi bi-person-bounding-box', 'TESTR':'bi bi-alphabet', 'UNITS':'bi bi-fonts', 'HTS':'bi bi-card-text', 'ByteTrack':'bi bi-diagram-3', 'DeepSORT':'bi bi-sort-down', 'SlowFast':'bi bi-speedometer2', 'SAHI':'bi bi-search', 'CBAM':'bi bi-bezier2', 'OCR':'bi bi-file-earmark-text',
@@ -60,6 +228,9 @@
     container.innerHTML = tags.map(tag => `<span><i class="${skillIcons[tag] || 'bi bi-code-square'}" aria-hidden="true"></i>${tag}</span>`).join('');
   });
 
+  /* ──────────────────────────────────────────────
+     Projects data & rendering
+  ────────────────────────────────────────────── */
   const projects = [
     {
       id: 'docchat', category: 'ai', icon: 'bi-file-earmark-richtext', title: 'DocChat — Multilingual Multimodal Document Intelligence & RAG', date: 'AI / RAG Project',
@@ -163,14 +334,10 @@
     }
   ];
 
+  /* ──────────────────────────────────────────────
+     Project rendering
+  ────────────────────────────────────────────── */
   const projectGrid = document.getElementById('projectGrid');
-  const modalElement = document.getElementById('projectModal');
-  const modal = window.bootstrap ? bootstrap.Modal.getOrCreateInstance(modalElement) : null;
-  const modalTitle = document.getElementById('projectModalLabel');
-  const modalCategory = document.getElementById('projectModalCategory');
-  const modalBody = document.getElementById('projectModalBody');
-  const modalLink = document.getElementById('projectModalLink');
-  const modalExtraLinks = document.getElementById('projectModalExtraLinks');
 
   const techMarkup = tech => tech.map(([icon, name]) => {
     const iconClass = icon.startsWith('devicon-') ? icon : `bi ${icon}`;
@@ -180,26 +347,35 @@
   const categoryLabel = category => category === 'ai' ? 'AI / Research' : 'Software Engineering';
 
   const renderProjects = filter => {
-    const visible = projects.filter(p => p.id !== 'docchat' && (filter === 'all' || p.category === filter));
-    projectGrid.innerHTML = visible.map(p => `
-      <div class="col-md-6 col-xl-4 reveal visible">
-        <article class="project-card" role="button" tabindex="0" data-project-id="${p.id}" aria-label="Open details for ${p.title}">
-          <div class="project-icon"><i class="bi ${p.icon}"></i></div>
-          ${p.date ? `<div class="project-date">${p.date}</div>` : ''}
-          <h3>${p.title}</h3>
-          <p class="project-summary">${p.summary}</p>
-          <div class="project-tech">${techMarkup(p.tech)}</div>
-          <div class="project-more">Click to view details <i class="bi bi-arrow-right"></i></div>
-        </article>
-      </div>`).join('');
+    const updateGrid = () => {
+      const visible = projects.filter(p => p.id !== 'docchat' && (filter === 'all' || p.category === filter));
+      projectGrid.innerHTML = visible.map(p => `
+        <div class="col-md-6 col-xl-4 reveal visible">
+          <article class="project-card" role="button" tabindex="0" data-project-id="${p.id}" aria-label="Open details for ${p.title}">
+            <div class="project-icon"><i class="bi ${p.icon}"></i></div>
+            ${p.date ? `<div class="project-date">${p.date}</div>` : ''}
+            <h3>${p.title}</h3>
+            <p class="project-summary">${p.summary}</p>
+            <div class="project-tech">${techMarkup(p.tech)}</div>
+            <div class="project-more">Click to view details <i class="bi bi-arrow-right"></i></div>
+          </article>
+        </div>`).join('');
 
-    projectGrid.querySelectorAll('.project-card').forEach(card => {
-      const open = () => openProject(card.dataset.projectId);
-      card.addEventListener('click', open);
-      card.addEventListener('keydown', e => {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+      projectGrid.querySelectorAll('.project-card').forEach(card => {
+        const open = () => openProject(card.dataset.projectId);
+        card.addEventListener('click', open);
+        card.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+        });
       });
-    });
+    };
+
+    if (!reducedMotion && document.startViewTransition) {
+      projectGrid.style.viewTransitionName = 'project-gallery';
+      document.startViewTransition(updateGrid);
+    } else {
+      updateGrid();
+    }
   };
 
   const openProject = id => {
@@ -217,15 +393,21 @@
       modalLink.classList.add('d-none');
       modalLink.removeAttribute('href');
     }
-    modal?.show();
+    showModal();
   };
 
+  /* ──────────────────────────────────────────────
+     Project filter buttons
+  ────────────────────────────────────────────── */
   document.querySelectorAll('.filter-btn').forEach(btn => btn.addEventListener('click', () => {
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b === btn));
     renderProjects(btn.dataset.filter);
   }));
   renderProjects('all');
 
+  /* ──────────────────────────────────────────────
+     Counter animation (research metrics)
+  ────────────────────────────────────────────── */
   if ('IntersectionObserver' in window && !reducedMotion) {
     const metricObserver = new IntersectionObserver(entries => entries.forEach(entry => {
       if (!entry.isIntersecting) return;
@@ -233,11 +415,10 @@
         const value = parseFloat(el.dataset.counter);
         const suffix = el.textContent.replace(/[\d.]/g, '');
         const steps = 28;
-        let current = 0;
         let step = 0;
         const timer = setInterval(() => {
           step += 1;
-          current = value * (step / steps);
+          const current = value * (step / steps);
           el.textContent = `${current.toFixed(2)}${suffix}`;
           if (step >= steps) { clearInterval(timer); el.textContent = `${value.toFixed(2)}${suffix}`; }
         }, 24);
@@ -246,4 +427,42 @@
     }), { threshold: .4 });
     document.querySelectorAll('.metric-grid').forEach(grid => metricObserver.observe(grid));
   }
+
+  /* A small moving specular highlight follows the pointer over each crystal tile. */
+  const crystalSelector = [
+    '.panel', '.focus-card', '.skill-card', '.achievement-card', '.contact-panel',
+    '.contact-side', '.research-card', '.education-card', '.project-card',
+    '.certificate-banner', '.metric', '.profile-badge', '.hero-chips span',
+    '.contact-list a', '.certificate-action', '.navbar'
+  ].join(',');
+  let pointerFrame = 0;
+  let latestPointerEvent = null;
+  document.addEventListener('pointermove', event => {
+    if (event.pointerType === 'touch' || reducedMotion) return;
+    latestPointerEvent = event;
+    if (pointerFrame) return;
+    pointerFrame = requestAnimationFrame(() => {
+      pointerFrame = 0;
+      const pointer = latestPointerEvent;
+      if (!pointer) return;
+      const tile = pointer.target.closest(crystalSelector);
+      if (!tile) return;
+      const rect = tile.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      const x = Math.max(0, Math.min(100, ((pointer.clientX - rect.left) / rect.width) * 100));
+      const y = Math.max(0, Math.min(100, ((pointer.clientY - rect.top) / rect.height) * 100));
+      tile.style.setProperty('--shine-x', `${x}%`);
+      tile.style.setProperty('--shine-y', `${y}%`);
+      tile.classList.add('crystal-tracking');
+    });
+  }, { passive: true });
+
+  document.addEventListener('pointerout', event => {
+    const tile = event.target.closest(crystalSelector);
+    if (!tile || tile.contains(event.relatedTarget)) return;
+    latestPointerEvent = null;
+    tile.classList.remove('crystal-tracking');
+    tile.style.removeProperty('--shine-x');
+    tile.style.removeProperty('--shine-y');
+  });
 })();
